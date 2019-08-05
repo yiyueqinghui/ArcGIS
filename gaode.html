@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>ArcGIS JS加载高德地图</title>
+    <!--<link rel="stylesheet" type="text/css" href="http://localhost:8080/arcgis_js_api/library/3.20/3.20/dijit/themes/tundra/tundra.css"/>-->
+    <!--<link rel="stylesheet" type="text/css" href="http://localhost:8080/arcgis_js_api/library/3.20/3.20/esri/css/esri.css" />-->
+    <link rel="stylesheet" href="https://js.arcgis.com/3.29/dijit/themes/claro/claro.css">    
+    <link rel="stylesheet" href="https://js.arcgis.com/3.29/esri/css/esri.css">
+    
+    <style>
+        html,body{
+            height: 100%;
+        }
+        #map{
+            height: 100%;
+        }
+    </style>
+
+
+    <script type="text/javascript">
+        var dojoConfig = {
+            async: false, //是否异步
+            parseOnLoad: true,
+            packages: [{ //解释：require(["js/.."],function(){}) 中  js/ 即为 location的值
+                name: "js", //对应require引用包里的js
+                location: location.pathname.replace(/\/[^/]*$/, '') + '/js' //对应的路径
+            }]
+        };
+    </script>
+    <!--<script src="https://js.arcgis.com/3.29/"></script>-->
+    <script type="text/javascript" src="js/init.js"></script>
+
+
+
+    <script>
+        //地图控件
+        var map;
+        require(["esri/map",
+        "esri/geometry/Extent",
+        "esri/SpatialReference",
+        "js/gaodeLayer",
+        "dojo/domReady!"], 
+        function (Map,Extent,SpatialReference,gaodeLayer) {
+            var startExtent = new Extent(112.445306, 35.485907, 112.445376, 35.485997,new SpatialReference({ wkid:4326 }) );   	
+        	
+            map = new Map("map", {
+                extent:startExtent,
+                center: [112.445376,35.485997],
+                zoom: 14,
+                logo :false, //logo
+                slider : true //缩小按钮
+            });
+            // var baselayer = new gaodeLayer();//默认加载矢量 new gaodeLayer({layertype:"road"});也可以
+            // var baselayer = new gaodeLayer({layertype: "st"});//加载卫星图
+            var baselayer = new gaodeLayer({layertype: "road"});//加载标注图
+            map.addLayer(baselayer);//添加高德地图到map容器
+			
+			map.setMapCursor("pointer");
+        });
+
+
+    </script>
+</head>
+<body>
+<!-- 地图div的id设为map -->
+<div id="map"></div>
+</body>
+</html>
