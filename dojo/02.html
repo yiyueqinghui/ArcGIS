@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no">
+		<title>SimpleMarkerSymbol with SVG Path - Simplified</title>
+		<link rel="stylesheet" href="http://js.arcgis.com/3.14/dijit/themes/claro/claro.css">
+		<link rel="stylesheet" href="http://js.arcgis.com/3.14/dojox/widget/ColorPicker/ColorPicker.css">
+		<link rel="stylesheet" href="http://js.arcgis.com/3.14/esri/css/esri.css">
+		<style>
+			html,
+			body,
+			#map {
+				height: 100%;
+				width: 100%;
+				margin: 0;
+				padding: 0;
+			}
+		</style>
+		<script src="http://js.arcgis.com/3.14/"></script>
+		<script>
+			var map;
+			//方法一  
+			require([
+				"esri/map", "esri/geometry/Point", "esri/SpatialReference",
+				"esri/symbols/SimpleMarkerSymbol", "esri/graphic"
+			], function(Map, Point, SpatialReference, SimpleMarkerSymbol, Graphic) {
+				//实例化地图
+				map = new Map("map", {
+					basemap: "topo",
+					center: [113, 37],
+					zoom: 13
+				});
+
+				//加载时标记点
+				map.on("load", function() {
+					ShowLocation(113, 37);
+				});
+
+				function ShowLocation(x, y) {
+					//点坐标
+					var point = new Point(x, y, new SpatialReference({
+						wkid: 4326
+					}));
+					//标记图标
+					var symbol = new esri.symbol.PictureMarkerSymbol("../img/carLogo.png", 25, 20);
+					//实例化
+					var graphic = new Graphic(point, symbol);
+					//增加到地图上
+					map.graphics.add(graphic);
+				};
+			});
+
+			//			方法二
+			/* 
+			 require([
+			            "esri/map", "esri/geometry/Point", "esri/SpatialReference",
+			            "esri/symbols/SimpleMarkerSymbol", "esri/graphic"
+			        ], function(Map, Tiled, Point, SpatialReference, SimpleMarkerSymbol, Graphic) {
+				map = new Map("map");
+                var tiled = new Tiled("http://server.arcgisonline.com/arcgis/rest/services/World_Topo_Map/MapServer");
+				map.addLayer(tiled);
+				
+				map.on("load", function() {
+					ShowLocation(113, 37);
+				});
+
+				
+				
+				
+				function ShowLocation(x, y) {
+					var point = new Point(x, y, new SpatialReference({
+						wkid: 4326
+					}));
+					var simpleMarkerSymbol = new SimpleMarkerSymbol();
+					var graphic = new Graphic(point, simpleMarkerSymbol);
+	
+					map.graphics.add(graphic);
+				};
+			})
+
+			*/
+		</script>
+	</head>
+	<div id="map"></div>
+	</body>
+
+</html>

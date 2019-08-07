@@ -1,0 +1,60 @@
+<!DOCTYPE html >
+<html lang="en">
+<head>
+    <title>地图测试页面</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="http://js.arcgis.com/3.14/esri/css/esri.css">
+    <style>
+        html, body, #mapDiv {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+ 
+        body {
+            background-color: #FFF;
+            overflow: hidden;
+            font-family: "Trebuchet MS";
+        }
+    </style>
+ 
+    <script src="http://js.arcgis.com/3.14/"></script>
+    <script>
+        dojo.require("esri.map");//依赖包的引用
+ 
+        dojo.addOnLoad(init);//添加页面初始化事件
+ 
+        //声明两个对象
+        var agsMap;
+        var tiledMapLayer;
+ 
+        //初始化事件
+        function init() {
+            //初始化范围
+            var initExtent = new esri.geometry.Extent({
+                "xmin": 12676062,
+                "ymin": 2566164,
+                "xmax": 12710191,
+                "ymax": 2588674,
+                "spatialReference": {"wkid": 102100}
+            });
+            //定义一个map实体
+            agsMap = new esri.Map("mapDiv", {extent: initExtent,logo:false});
+            //定义一个Layer切片图层
+            tiledMapLayer = new esri.layers.ArcGISTiledMapServiceLayer("http://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer");
+            //装载图层
+            agsMap.addLayer(tiledMapLayer);
+ 
+            //监听resize方法
+            dojo.connect(agsMap, 'onLoad', function (theMap) {
+                dojo.connect(dijit.byId('mapDiv'), 'resize', agsMap, agsMap.resize);
+            });
+        }
+ 
+    </script>
+</head>
+<body>
+<div id="mapDiv"></div>
+</body>
+</html>
