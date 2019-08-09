@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<link rel="stylesheet" href="https://js.arcgis.com/3.29/esri/css/esri.css">
+	</head>
+	<body>
+		<div id="mapDiv"></div>
+	</body>
+	<script src="http://js.arcgis.com/3.14/"></script>
+	<script>
+	   function drawGraphic(geometry){
+ 
+	        map.graphics.clear();//清除图层
+			require([
+				"esri/map","esri/layers/GraphicsLayer", "esri/graphic", "esri/symbols/SimpleLineSymbol", "esri/symbols/SimpleFillSymbol", "dojo/colors",
+				"esri/toolbars/draw", "esri/symbols/SimpleMarkerSymbol"
+			], function(Map,GraphicsLayer, Graphic, SimpleLineSymbol, SimpleFillSymbol, Color, Draw, SimpleMarkerSymbol) {
+
+
+				var map = new Map("mapDiv");
+				//mapDiv： Container id
+				//for the referencing map， 存放地图的容器
+				//创建图层
+				var graphicsLayer = new GraphicsLayer();
+				//将图层添加到地图中
+				map.addLayer(graphicsLayer);
+
+				//根据geometry生成图形graphic
+				//定义线符号
+				var lineSymbol = new SimpleLineSymbol(SimpleLineSymbol.STYLE_DASH, new Color([255, 0, 0]), 3);
+				//定义点符号
+				var pSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbol.STYLE_CIRCLE, 10, lineSymbol, new Color([255, 0, 0]));
+				//定义面符号
+				var fill = SimpleFillSymbol(SimpleFillSymbol.STYLE_SOLID, lineSymbol, new Color([255, 0, 0]));
+				//定义图形
+				var graphic;
+				var type = geometry.type;
+				switch(type) {
+					case "point":
+						graphic = new Graphic(geometry, pSymbol);
+						break;
+					case "polyline":
+						graphic = new Graphic(geometry, lineSymbol);
+						break;
+					case "polygon":
+						graphic = new Graphic(geometry, fill);
+						break;
+				}
+				//将图形添加到图层中
+				graphicsLayer.add(graphic);
+
+			})
+			
+	   }
+	   
+	   drawGraphic();
+	</script>
+
+</html>

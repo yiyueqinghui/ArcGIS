@@ -1,70 +1,89 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-    <title></title>
-     <link rel="stylesheet" href="https://js.arcgis.com/3.29/dijit/themes/claro/claro.css">    
-    <link rel="stylesheet" href="https://js.arcgis.com/3.29/esri/css/esri.css">
-    <!--<link rel="stylesheet" type="text/css" href="http://192.168.1.205:810/arcgis_js_api/library/3.9/3.9/js/dojo/dijit/themes/tundra/tundra.css"/>
-    <link rel="stylesheet" type="text/css" href="http://192.168.1.205:810/arcgis_js_api/library/3.9/3.9/js/esri/css/esri.css" />-->
-    <!--<script type="text/javascript" src="http://192.168.1.205:810/arcgis_js_api/library/3.9/3.9/init.js"></script>-->
-    <!--<script type="text/javascript" src="dojo/jsapi_vsdoc10_v38.js"></script>-->
-    <script src="http://js.arcgis.com/3.14/"></script>
-    <script type="text/javascript">
-        dojo.require("esri.map");
-        dojo.ready(function () {
-            var MyMap = new esri.Map("MyMapDiv");
-            var myTiledMapServiceLayer = new esri.layers.ArcGISTiledMapServiceLayer("http://services.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer");
-            var point = new esri.geometry.Point(118.0605760000, 36.8424320000, MyMap.spatialReference);
-            //地图首次加载显示的位置和放大级别
-            MyMap.centerAndZoom(point, 8);
-            MyMap.addLayer(myTiledMapServiceLayer);
+<!DOCTYPE html>
+<html>
 
-            //创建图层
-            var graphicLayer = new esri.layers.GraphicsLayer();
-            //把图层添加到地图上
-            MyMap.addLayer(graphicLayer);
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no">
+		<title>SimpleMarkerSymbol with SVG Path - Simplified</title>
+		<link rel="stylesheet" href="http://js.arcgis.com/3.14/dijit/themes/claro/claro.css">
+		<link rel="stylesheet" href="http://js.arcgis.com/3.14/dojox/widget/ColorPicker/ColorPicker.css">
+		<link rel="stylesheet" href="http://js.arcgis.com/3.14/esri/css/esri.css">
+		<style>
+			html,
+			body,
+			#map {
+				height: 100%;
+				width: 100%;
+				margin: 0;
+				padding: 0;
+			}
+		</style>
+		<script src="http://js.arcgis.com/3.14/"></script>
+		<script>
+			var map;
+			//方法一  
+			require([
+				"esri/map", "esri/geometry/Point", "esri/SpatialReference",
+				"esri/symbols/SimpleMarkerSymbol", "esri/graphic"
+			], function(Map, Point, SpatialReference, SimpleMarkerSymbol, Graphic) {
+				//实例化地图
+				map = new Map("map", {
+					basemap: "topo",
+					center: [113, 37],
+					zoom: 13
+				});
 
-            //设置标注的经纬度
-            //方法一
-            var pt = new esri.geometry.Point(118.0605760000, 36.8424320000, MyMap.spatialReference);
-            //方法二
-            //  var pt = new esri.geometry.geographicToWebMercator(new esri.geometry.Point({
-            //    "x": 118.0605760000,
-            //    "y": 36.8424320000,
-            //    "spatialReference": { "wkid": 102113 }
-            //            }));
+				//加载时标记点
+				map.on("load", function() {
+					ShowLocation(113, 37);
+				});
 
-            //设置标注显示的图标
-            //var symbol = new esri.symbol.SimpleMarkerSymbol();
-            var symbol = new esri.symbol.PictureMarkerSymbol("../img/carLogo.png", 25, 20);
+				function ShowLocation(x, y) {
+					//点坐标
+					var point = new Point(x, y, new SpatialReference({
+						wkid: 4326
+					}));
+					//标记图标
+					var symbol = new esri.symbol.PictureMarkerSymbol("../img/carLogo.png", 25, 20);
+					//实例化
+					var graphic = new Graphic(point, symbol);
+					//增加到地图上
+					map.graphics.add(graphic);
+				};
+			});
 
-            //要在模版中显示的参数
-            var attr = { "address": "山东省淄博市张店区" };
+			//			方法二
+			/* 
+			 require([
+			            "esri/map", "esri/geometry/Point", "esri/SpatialReference",
+			            "esri/symbols/SimpleMarkerSymbol", "esri/graphic"
+			        ], function(Map, Tiled, Point, SpatialReference, SimpleMarkerSymbol, Graphic) {
+				map = new Map("map");
+                var tiled = new Tiled("http://server.arcgisonline.com/arcgis/rest/services/World_Topo_Map/MapServer");
+				map.addLayer(tiled);
+				
+				map.on("load", function() {
+					ShowLocation(113, 37);
+				});
 
-            //创建模版
-            var infoTemplate = new esri.InfoTemplate("标题", "地址:${address}");
-            //创建图像
-            var graphic = new esri.Graphic(pt, symbol, attr, infoTemplate);
-            //把图像添加到刚才创建的图层上
-            graphicLayer.add(graphic);
+				
+				
+				
+				function ShowLocation(x, y) {
+					var point = new Point(x, y, new SpatialReference({
+						wkid: 4326
+					}));
+					var simpleMarkerSymbol = new SimpleMarkerSymbol();
+					var graphic = new Graphic(point, simpleMarkerSymbol);
+	
+					map.graphics.add(graphic);
+				};
+			})
 
-            //注册事件，注意事件名大小写敏感
-            //鼠标在地图上移动地图坐标的事件
-            dojo.connect(MyMap, "onMouseMove", showCoordinates);
-            //鼠标按下后，拖动地图显示坐标的事件
-            dojo.connect(MyMap, "onMouseDrag", showCoordinates);
-        });
+			*/
+		</script>
+	</head>
+	<div id="map"></div>
+	</body>
 
-        //显示地图坐标
-        function showCoordinates(evt)
-        {
-            var mp = evt.mapPoint;
-            dojo.byId("info").innerHTML = "坐标：" + mp.x + " , " + mp.y;
-        }
-    </script>
-</head>
-<body>
-<div id="MyMapDiv" style=" width:600px; height:500px; border:1px solid #000" class="MapClass"></div>
-<p id="info"></p>
-</body>
 </html>
