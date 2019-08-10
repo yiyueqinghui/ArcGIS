@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>dojo中DOM操作</title>
+	</head>
+	<body>
+		<dl>
+			<dd>dojo.ready    初始化加载</dd>
+			<dd>dojo.byId()   相当于document.getElementById(),选取唯一的id元素</dd>
+			<dd>dojo.query('css3选择器')  相当于$("css3选择器"),选取所有相应dom,返回一个NodeList,可以遍历操作每一个元素</dd>
+			<dd>dojo.body()   返回body元素</dd>
+			<dd>dojo.create() 创建dom元素,插入相应位置。(使用见例子)</dd>
+			<dd>dojo.empty(node) 删除节点的所有子子节点(var node = dojo.byId('contaiter')) </dd>
+			<dd>dojo.destroy(node) 删除节点及其所有子节点</dd>
+		</dl>
+		<hr />
+		<div id="container"></div>
+	</body>
+	<script type="text/javascript" src="../js/dojo-release-1.15.0/dojo/dojo.js"></script>
+	<script>
+		dojo.addOnLoad(function(){
+			dojo.create('div',{
+				innerHTML:'hellow world!'
+			},dojo.byId('container'));
+		})
+	</script>
+</html>

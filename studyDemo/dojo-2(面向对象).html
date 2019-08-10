@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>dojo中面向对象</title>
+	</head>
+	<body>
+		<div id="container">
+			<table border="1">
+				<tr>
+					<td>dojo.declare(className,superclass,props)</td>
+					<td>dojo类的声明(className 类名  supperclass 父类名     props 属性)</td>
+				</tr>
+				<tr>
+					<td>classObj.extend({})  classObj为定义的类</td>
+					<td>extend({})   类的扩展,相当于对象的prototype</td>
+				</tr>
+				<tr>
+					<td>staticFileds 对象的静态域</td>
+					<td>见domo</td>
+				</tr>
+			</table>
+		</div>
+	</body>
+	<script type="text/javascript" src="../js/dojo-release-1.15.0/dojo/dojo.js"></script>
+	<script>
+		//创建类
+		dojo.declare('People',null,{
+			//静态域
+			staticFields:{
+				num:0,
+			},
+			name:'cj',
+			constructor:function(name){
+				this.name = name;
+				this.staticFields.num++;
+			}
+		})
+		var info = new People('yiyueqinghui');
+		console.log(info);
+		console.log(info.staticFields.num);
+		
+		var info2 = new People('02');
+		console.log(info2.staticFields.num);
+		
+		//创建类
+		dojo.declare('Student',People,{
+			school:'',
+			constructor:function(name,school){
+				this.school = school;
+			},
+			func1:function(){
+				console.log('func1');
+			}
+		})
+		
+		//定义扩展
+		Student.extend({
+			func1:function(){console.log('func1---extend')}  //会覆盖原先的方法
+		})
+		var student = new Student('xxx','beida');  //由于子类Student继承父类People,故实例化Student时，也会执行People的constructor;
+		console.log(student);
+	    student.func1();
+		
+		
+		
+		
+		//tton']utton))  
+		
+		
+		
+	</script>
+</html>
