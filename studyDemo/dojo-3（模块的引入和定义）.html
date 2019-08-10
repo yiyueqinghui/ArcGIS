@@ -2,14 +2,87 @@
 <html>
 	<head>
 		<meta charset="UTF-8">
-		<title>dojo中DOM操作函数</title>
+		<title>dojo中模块的引入和定义</title>
 	</head>
 	<body>
-		<div id="container"></div>
+		<div id="container">
+			<table>
+				<tr>
+					<td>Require</td>
+					<td>引入组件和模块</td>
+				</tr>
+				<tr>
+					<td>Define</td>
+					<td>定义一个模块，这个模块可以被require引用</td>
+				</tr>
+				<tr>
+					<td>Request</td>
+					<td>用于异步请求</td>
+				</tr>
+				<tr>
+					<td>Declare</td>
+					<td>函数类定义</td>
+				</tr>
+			</table>
+			
+			<hr />
+			<button id="btn">按钮</button>
+			<p id="text">old text</p>
+		</div>
 	</body>
-	<script type="text/javascript" src="../js/dojo-release-1.15.0/dojo/dojo.js"></script>
+	<!-- dojoConfig配置    https://www.cnblogs.com/mytudousi/p/6166280.html-->
 	<script>
-	
+		//声明自定义类的配制
+	   var dojoConfig = {
+	   	  baseUrl:'studyDemo',
+	   	  packages:[]
+	   }
 	
 	</script>
+	<script type="text/javascript" src="../js/dojo-release-1.15.0/dojo/dojo.js"></script>
+	<script>
+		//引入 和定义模块demo
+		require([
+		   'dojo/ready',
+		   'module/person',       //引入自定义的类
+		   'module/student'       //引入自定义的类
+		],function(Ready,Person,Student){
+			Ready(function(){
+				var personObj = new Person('xxxx');
+				alert(personObj.name);
+				
+				var studentObj = new Student('Boy');
+				alert(studentObj.name);
+			})
+		})
+		
+		//函数请求demo
+		require(
+			['dojo/on','dojo/dom','dojo/dom-style','dojo/request','dojo/mouse','dojo/domReady!'],
+			function(On,Dom,DomStyle,Request,Mouse){
+				var btn = Dom.byId('btn'),
+				    txt = Dom.byId('text');
+				    
+				On(btn,'click',function(evt){
+					Request.get('test.txt').then(function(res){
+						txt.innerHTML = res;
+					},function(err){
+						txt.innerHTML = err;
+					})
+					
+				})
+				
+				On(txt,Mouse.enter,function(evt){
+					DomStyle.set(txt,'color','red');
+				})
+				
+				On(txt,Mouse.leave,function(evt){
+					DomStyle.set(txt,'color','#000000');
+				})
+				
+				
+			}
+		)
+	</script>
+	
 </html>

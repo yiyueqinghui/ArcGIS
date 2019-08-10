@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>dojo中dojoConfig设置</title>
+	</head>
+	<body>
+		<div id="container">
+			
+		</div>
+	</body>
+	<!-- dojoConfig配置    https://www.cnblogs.com/mytudousi/p/6166280.html-->
+	<script>
+		//声明自定义类的配制
+	    var dojoConfig = {
+	    	has:{
+	    		'dojo-firebug':true   //dojo调试工具
+	    	},
+	    	parseOnLoad:false,    //是否在DOM和所有初始化完成后由dojo.parser解析页面
+	    	foo:'bar',
+	    	async:true,          //是否异步加载
+	    	aliases:[           //设置别名
+	    	   ['ready','dojo/domReady'],
+	    	   ['registry','dijit/registry'],
+	    	   ['dialog','dijit/Dialog'],
+	    	   ['parser','dojo/parser']
+	    	],
+	    	//提供包名及其路径
+	    	packages:[      
+	    	   {
+	    	   	  name:'js',
+	    	   	  location:'/js'
+	    	   }
+	    	],
+	    	//定义本地与国际化
+	    	locale:location.search.match(locale=([\w\-]+)/)?RegExp.$1:'en-us'
+	    	
+	    	
+	    	
+	    	
+	    	
+	    	
+	    	
+	    	
+	    	
+	    	
+	    }
+	
+	</script>
+	<script type="text/javascript" src="../js/dojo-release-1.15.0/dojo/dojo.js"></script>
+	<script>
+		
+	</script>
+	
+</html>
