@@ -46,29 +46,23 @@
           slider: false,
           zoom: 6
         });
-        var symbol = new SimpleFillSymbol().setColor(null).outline.setColor("blue");
-        var gl = new GraphicsLayer({ id: "circles" });
-        var geodesic = dom.byId("geodesic");
-        map.addLayer(gl);
-        map.on("click", function(e) {
-          var radius = map.extent.getWidth() / 10;
+        
+        map.on('load',function(){
+        	var symbol = new SimpleFillSymbol().setColor(null).outline.setColor("blue");
           var circle = new Circle({
-            center: e.mapPoint,
-            geodesic: domAttr.get(geodesic, "checked"),
-            radius: radius
+            center:[-120.741, 56.39],
+            radius: 100000
           });
           var graphic = new Graphic(circle, symbol);
-          gl.add(graphic);
-        });
+          map.graphics.add(graphic);
+        	
+        })
+       
+        
       });
     </script>
   </head>
   <body>
     <div id="map"></div>
-    <div id="controls">
-      <div>Click the map.</div>
-      <input type="checkbox" id="geodesic">
-      <label for="geodesic">Geodesic?</label>
-    </div>
   </body>
 </html>

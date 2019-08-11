@@ -8,6 +8,8 @@
 
 <link rel="stylesheet" href="https://js.arcgis.com/3.29/dijit/themes/claro/claro.css">
 <link rel="stylesheet" href="https://js.arcgis.com/3.29/esri/css/esri.css">
+	<!--<link rel="stylesheet" href="js/dojo-release-1.15.0/dijit/themes/claro/claro.css" />-->
+	<!--<link rel="stylesheet" href="js/arcgis_js_v314_api/arcgis_js_api/library/3.14/3.14/esri/" />-->
 <style>
    html, body {
     height: 100%;
@@ -37,9 +39,13 @@
 </style>
 
 <script src="https://js.arcgis.com/3.29/"></script>
+<!--<script src="js/arcgis_js_v314_api/arcgis_js_api/library/3.14/3.14/init.js"></script>-->
 <script>
 var map, tb;
-require(["dojo/dom",
+require(
+	[
+	    "esri/geometry/Circle", "esri/geometry/Point",  
+	    "dojo/dom",
 
         "dojo/_base/array",
         "dojo/parser",
@@ -65,8 +71,8 @@ require(["dojo/dom",
         "dijit/layout/ContentPane",
         "dijit/form/Button", "dojo/domReady!"
         ],
-      function(dom, array, parser, query, on, Color, esriConfig, Map, Graphic, normalizeUtils, GeometryService, BufferParameters, Draw, SimpleMarkerSymbol, SimpleLineSymbol, SimpleFillSymbol){
-
+      function(Circle,Point,dom, array, parser, query, on, Color, esriConfig, Map, Graphic, normalizeUtils, GeometryService, BufferParameters, Draw, SimpleMarkerSymbol, SimpleLineSymbol, SimpleFillSymbol){
+        
         parser.parse();
 
         esriConfig.defaults.geometryService = new GeometryService("https://utility.arcgisonline.com/ArcGIS/rest/services/Geometry/GeometryServer");
@@ -87,22 +93,46 @@ require(["dojo/dom",
            tb.activate(evt.target.id);
           }
         });
+        
 
         map = new Map("map", {
           basemap: "streets",
           center: [-111.5, 39.541],
           zoom: 7
         });
-        map.on("load", initToolbar);
-
+        
+        
+//      var symbol = new SimpleFillSymbol(
+//          SimpleFillSymbol.STYLE_SOLID,
+//          new SimpleLineSymbol(
+//            SimpleLineSymbol.STYLE_SOLID,
+//            new Color([255,0,0,0.65]), 2
+//          ),
+//          new Color([255,0,0,0.35])
+//        );
+//	    var point = new Point([-111.5, 39.541]);
+//		var geometry = new Circle(point,{
+//		  "radius": 2000
+//		});
+//		
+//		var graphic = new Graphic(geometry);
+//      map.add(graphic);
+        
+        
+        
+        
+      
+       map.on("load", initToolbar);
 
 
       function initToolbar(evtObj) {
         tb = new Draw(evtObj.map);
         tb.on("draw-end", doBuffer);
+        doBuffer(geometry);
       }
 
       function doBuffer(evtObj) {
+      	console.log(evtObj);
         tb.deactivate();
         var geometry = evtObj.geometry, symbol;
         switch (geometry.type) {
@@ -115,7 +145,7 @@ require(["dojo/dom",
            case "polygon":
              symbol = new SimpleFillSymbol(SimpleFillSymbol.STYLE_NONE, new SimpleLineSymbol(SimpleLineSymbol.STYLE_DASHDOT, new Color([255,0,0]), 2), new Color([255,255,0,0.25]));
              break;
-        }
+      }
 
           var graphic = new Graphic(geometry, symbol);
           map.graphics.add(graphic);
@@ -158,7 +188,8 @@ require(["dojo/dom",
             map.graphics.add(graphic);
           });
 
-        }
+     }
+
   });
 </script>
 
