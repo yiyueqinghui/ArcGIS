@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>Create circles</title>
+    <link rel="stylesheet" href="https://js.arcgis.com/3.29/esri/css/esri.css">
+    <style>
+      html, body, #map {
+        height: 100%; width: 100%; margin: 0; padding: 0; 
+      }
+      #controls {
+        background: #fff;
+        box-shadow: 0 6px 6px -6px #999;
+        color: #444;
+        font-family: sans-serif;
+        height: auto;
+        left: 1em;
+        padding: 1em;
+        position: absolute;
+        top: 1em;
+        width: auto;
+        z-index: 40;
+      }
+      #controls div {
+        padding: 0 0 1em 0;
+      }
+    </style>
+
+    <script src="https://js.arcgis.com/3.29/"></script>
+    <script>
+      var map;
+    
+      require([
+        "esri/map", "esri/geometry/Circle", "esri/symbols/SimpleFillSymbol", 
+        "esri/graphic", "esri/layers/GraphicsLayer",
+        "dojo/dom", "dojo/dom-attr", "esri/geometry/Polyline","dojo/domReady!"
+      ], function(
+        Map, Circle, SimpleFillSymbol, 
+        Graphic, GraphicsLayer, 
+        dom, domAttr,Polyline
+      ) {
+        map = new Map("map", {
+          basemap: "streets",
+          center: [-122.60,45.50],
+          slider: false,
+          zoom: 6
+        });
+        
+        map.on('load',function(){
+        	var symbol = new SimpleFillSymbol().setColor(null).outline.setColor("blue");
+          var polylineJson = {
+				    "paths":[[[-122.68,45.53], [-122.58,46.55],
+				    [-122.57,47.58],[-122.53,48.6]]],
+				    "spatialReference":{"wkid":4326}
+				  };
+
+          var polyline = new Polyline(polylineJson);
+          var graphic = new Graphic(polyline, symbol);
+          map.graphics.add(graphic);
+        	
+        })
+       
+        
+      });
+    </script>
+  </head>
+  <body>
+    <div id="map"></div>
+  </body>
+</html>

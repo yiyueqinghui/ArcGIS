@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>Create circles</title>
+    <link rel="stylesheet" href="https://js.arcgis.com/3.29/esri/css/esri.css">
+    <style>
+      html, body, #map {
+        height: 100%; width: 100%; margin: 0; padding: 0; 
+      }
+      #controls {
+        background: #fff;
+        box-shadow: 0 6px 6px -6px #999;
+        color: #444;
+        font-family: sans-serif;
+        height: auto;
+        left: 1em;
+        padding: 1em;
+        position: absolute;
+        top: 1em;
+        width: auto;
+        z-index: 40;
+      }
+      #controls div {
+        padding: 0 0 1em 0;
+      }
+    </style>
+
+    <script src="https://js.arcgis.com/3.29/"></script>
+    <script>
+      var map;
+    
+      require([
+        "esri/map", "esri/geometry/Circle", "esri/symbols/SimpleFillSymbol", 
+        "esri/graphic", "esri/geometry/Polygon", "dojo/domReady!"
+      ], function(
+        Map, Circle, SimpleFillSymbol,Graphic,Polygon
+      ) {
+        map = new Map("map", {
+          basemap: "streets",
+          center: [-120.741, 56.39],
+          slider: false,
+          zoom: 6
+        });
+        
+        map.on('load',function(){
+        	var symbol = new SimpleFillSymbol().setColor(null).outline.setColor("blue");
+          var singleRingPolygon = new Polygon([[-120, 50], [-110, 50], [-115,30], [-120,30]]);
+          var graphic = new Graphic(singleRingPolygon, symbol);
+          map.graphics.add(graphic);
+        	
+        })
+       
+        
+      });
+    </script>
+  </head>
+  <body>
+    <div id="map"></div>
+  </body>
+</html>

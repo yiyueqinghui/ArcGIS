@@ -1,407 +1,55 @@
-<!DOCTYPE html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
-<head>
-    <meta charset="utf-8"/>
-    <title>缓冲区分析</title>
-    <!--<link type="text/css" rel="stylesheet" href="http://localhost/arcgis_js_api/library/4.8/esri/css/main.css"/>-->
-    <link rel="stylesheet" href="https://js.arcgis.com/3.29/esri/css/esri.css">
-    <script src="js/init.js"></script>
- 
-    <style>
-        html,
-        body,
-        #viewDiv {
-            padding: 0;
-            margin: 0;
-            height: 100%;
-            width: 100%;
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=7" />
+    <title>Create Map</title>
+    <link rel="stylesheet" type="text/css" href="styles.css"
+          href="http://serverapi.arcgisonline.com/jsapi/arcgis/1.6/js/dojo/dijit/themes/tundra/tundra.css">
+    <script type="text/javascript" src="http://serverapi.arcgisonline.com/jsapi/arcgis/?v=1.6"></script>
+    <script type="text/javascript">
+        dojo.require("esri.map");
+        function init(){
+            var map = new esri.Map("map");//1对象名，2类名，3div的id名
+            var tiledMapServiceLayer = new esri.layers.ArcGISTiledMapServiceLayer(
+                "http://server.arcgisonline.com/ArcGIS/rest/services/ESRI_StreetMap_World_2D/MapServer"
+            );
+            map.addLayer(tiledMapServiceLayer);
+            //添加一个事件监听器的地图onExtentChange事件，地图范围一旦改变，回调函数showExtent就被调用
+            dojo.connect(map,"onExtentChange",showExtent);
         }
-    </style>
-</head>
- 
-<body>
-<div id="viewDiv">
-    <div id="line-button" class="esri-widget esri-widget--button esri-interactive" title="画线">
-        <span class="esri-icon-polyline"></span>
-    </div>
-    <div id="area-button" class="esri-widget esri-widget--button esri-interactive" title="画面">
-        <span class="esri-icon-polygon"></span>
-    </div>
-    <div id="point-button" class="esri-widget esri-widget--button esri-interactive" title="画点">
-        <span class="esri-icon-radio-checked"></span>
-    </div>
-    <div id="circle-button" class="esri-widget esri-widget--button esri-interactive" title="画圆">
-        <span class="esri-icon-radio-unchecked"></span>
-    </div>
-    <div id="rectangle-button" class="esri-widget esri-widget--button esri-interactive" title="画矩形">
-        <span class="esri-icon-checkbox-unchecked"></span>
-    </div>
-</div>
-<script>
-    require([
-        "esri/Map",
-        "esri/views/MapView",
-        "esri/views/2d/draw/Draw",
-        "esri/Graphic",
-        "esri/geometry/Polyline",
-        "esri/geometry/Polygon",
-        "esri/geometry/Point",
-        "esri/geometry/Circle",
-        "esri/geometry/geometryEngine",
-        "dojo/domReady!"
-    ], function (
-        Map, MapView,
-        Draw, Graphic,
-        Polyline, Polygon,Point,Circle,geometryEngine
-    ) {
-        var map = new Map({
-            basemap: "dark-gray"
-        });
- 
-        //二维视图
-        var view = new MapView({
-            map: map,
-            container: "viewDiv"
-        });
-        view.ui.add("line-button", "top-left");//添加绘制线按钮，自定义UI
-        view.ui.add("area-button", "top-left");//添加绘制面按钮，自定义UI
-        view.ui.add("point-button", "top-left");//添加绘制面按钮，自定义UI
-        view.ui.add("circle-button", "top-left");//添加绘制面按钮，自定义UI
-        view.ui.add("rectangle-button", "top-left");//添加绘制面按钮，自定义UI
-        // view.ui.remove("attribution");//移除底部ESRI logo
-        var polySym = {
-            type: "simple-fill", // autocasts as new SimpleFillSymbol()
-            color: [140, 140, 222, 0.5],
-            outline: {
-                color: [0, 0, 0, 0.5],
-                width: 2
-            }
-        };
-        view.when(function () {
-            var draw = new Draw({
-                view: view
-            });
-            //绑定线按钮绘制事件
-            var drawLineButton = document.getElementById("line-button");
-            drawLineButton.onclick = function() {
-                view.graphics.removeAll();//清楚之前的绘制
-                enableCreateLine(draw, view);
-            };
-            //绑定面按钮绘制事件
-            var drawAreaButton = document.getElementById("area-button");
-            drawAreaButton.onclick = function() {
-                view.graphics.removeAll();//清楚之前的绘制
-                enableCreateArea(draw, view);
-            };
-            //绑定面按钮绘制事件
-            var drawPointButton = document.getElementById("point-button");
-            drawPointButton.onclick = function() {
-                enableCreatePoint(draw, view);
-            };
-            //绑定面按钮绘制事件
-            var drawCircleButton = document.getElementById("circle-button");
-            drawCircleButton.onclick = function() {
-                enableCreateCircle(draw, view);
-            };
-            //绑定面按钮绘制事件
-            var drawRectangleButton = document.getElementById("rectangle-button");
-            drawRectangleButton.onclick = function() {
-                enableCreateRectangle(draw, view);
-            };
-        });
-        //开始监听画线
-        function enableCreateLine(draw, view) {
-            var action = draw.create("polyline", {
-                mode: "click"
-            });
-            // 获取焦点
-            view.focus();
- 
-            // 顶点添加事件
-            action.on("vertex-add", createPolyline);
- 
- 
-            //顶点移除事件
-            action.on("vertex-remove", createPolyline);
- 
- 
-            // 鼠标移动事件
-            action.on("cursor-update", createPolyline);
- 
- 
-            // 绘制完成事件
-            action.on("draw-complete", createPolyline);
- 
- 
+        //showExtent函数建立一个字符串，包含两个角落的地图坐标，这两个角来确定地图的边界矩形
+        //Lower left corner = (extent.xmin, extent.ymin)
+        //Upper right corner = (extent.xmax, extent.ymax)
+        function showExtent(extent){
+            var s = "";
+            s = "XMin: "+ extent.xmin + "&nbsp;"
+                   +"YMin: " + extent.ymin + "&nbsp;"
+                   +"XMax: " + extent.xmax + "&nbsp;"
+                   +"YMax: " + extent.ymax;
+                   //showExtent函数的最后一行显示在页面上添加完成字符串的“info”DIV坐标
+               dojo.byId("info").innerHTML = s;
         }
-        //开始监听画面
-        function enableCreateArea(draw, view) {
-            var action = draw.create("polygon", {
-                mode: "click"//点击方式加点
-            });
-            // 获取焦点
-            view.focus();
- 
-            // 顶点添加事件
-            action.on("vertex-add", createPolygon);
- 
- 
-            //顶点移除事件
-            action.on("vertex-remove", createPolygon);
- 
- 
-            // 鼠标移动事件
-            action.on("cursor-update", createPolygon);
- 
- 
-            // 绘制完成事件
-            action.on("draw-complete", createPolygon);
- 
- 
-        }
-        //开始监听画点
-        function enableCreatePoint(draw, view) {
-            var action = draw.create("point", {
-                mode: "click"//点击方式加点
-            });
-            // 获取焦点
-            view.focus();
- 
-            // 顶点添加事件
-            action.on("vertex-add", createPoint);
- 
- 
-            //顶点移除事件
-            action.on("vertex-remove", createPoint);
- 
- 
-            // 绘制完成事件
-            action.on("draw-complete", createPoint);
- 
- 
-        }
-        //开始监听画圆
-        function enableCreateCircle(draw, view) {
-            var action = draw.create("circle", {
-                mode: "click"//点击方式加点
-            });
-            // 获取焦点
-            view.focus();
-            //顶点移除事件
-            action.on("vertex-remove", createCircle);
-            // 鼠标移动事件
-            action.on("cursor-update", createCircle);
-            // 绘制完成事件
-            action.on("draw-complete", createCircle);
-        }
-        //开始监听画矩形
-        function enableCreateRectangle(draw, view) {
-            var action = draw.create("rectangle", {
-                mode: "click"//点击方式加点
-            });
-            // 获取焦点
-            view.focus();
- 
-            //顶点移除事件
-            action.on("vertex-remove", createRectangle);
-            // 鼠标移动事件
-            action.on("cursor-update", createRectangle);
-            // 绘制完成事件
-            action.on("draw-complete", createRectangle);
- 
-        }
-        //根据点坐标生成新的线
-        function createPolyline(event) {
-            //获取所有顶点
-            var vertices = event.vertices;
-            //清除之前绘制
-            view.graphics.removeAll();
-            var line=new Polyline({
-                paths: vertices,
-                spatialReference: view.spatialReference
-            });
-            // 生成绘制的图形
-            var graphic = new Graphic({
-                geometry: line,
-                symbol: {
-                    type: "simple-line", // autocasts as new SimpleFillSymbol
-                    color: [4, 90, 141],
-                    width: 4,
-                    cap: "round",
-                    join: "round"
-                }
-            });
-            // 将绘制的图形添加到view
-            view.graphics.add(graphic);
-            if(event.type=="draw-complete"){
-                createBuffer(line);
-            }
-        }
-        //根据点坐标生成新的线
-        function createPolygon(event) {
-            //获取所有顶点
-            var vertices = event.vertices;
-            //清除之前绘制
-            view.graphics.removeAll();
-            var polygon=new Polygon({
-                hasZ: false,
-                hasM: false,
-                rings: [vertices],
-                spatialReference: view.spatialReference
-            });
-            // 生成绘制的图形
-            var graphic = new Graphic({
-                geometry:polygon ,
-                symbol: {
-                    type: "simple-fill",  // autocasts as new SimpleFillSymbol()
-                    color: [ 51,51, 204, 0.9 ],
-                    style: "solid",
-                    outline: {  // autocasts as new SimpleLineSymbol()
-                        color: "white",
-                        width: 1
-                    }
-                }
-            });
-            // 将绘制的图形添加到view
-            view.graphics.add(graphic);
-            if(event.type=="draw-complete"){
-                createBuffer(polygon);
-            }
-        }
- 
-        //根据点坐标生成新的线
-        function createPoint(event) {
-            //获取所有顶点
-            var coordinates = event.coordinates;
-            var point= new Point({
-                hasZ: false,
-                hasM: false,
-                x:coordinates[0],
-                y:coordinates[1],
-                spatialReference: view.spatialReference
-            });
-            //生成绘制的图形
-            var graphic = new Graphic({
-                geometry:point,
-                symbol: {
-                    type: "simple-marker",  // autocasts as new SimpleMarkerSymbol()
-                    style: "square",
-                    color: "blue",
-                    size: "8px",  // pixels
-                    outline: {  // autocasts as new SimpleLineSymbol()
-                        color: [ 255, 255, 0 ],
-                        width: 3  // points
-                    }
-                }
-            });
-            // 将绘制的图形添加到view
-            view.graphics.add(graphic);
-            if(event.type=="draw-complete"){
-                createBuffer(point);
-            }
-        }
-        //根据点坐标生成新的线
-        function createCircle(event) {
-            //获取所有顶点
-            var vertices = event.vertices;
-            //少于一个点无法展示圆
-            if(vertices.length<2){
-                return
-            }
-            //清除之前绘制
-            view.graphics.removeAll();
-            //生成绘制的图形,两点画圆
-            var center=new Point({
-                hasZ: false,
-                hasM: false,
-                x:vertices[0][0],
-                y:vertices[0][1],
-                spatialReference: view.spatialReference
-            });
-            var dis=center.distance(new Point({
-                hasZ: false,
-                hasM: false,
-                x:vertices[1][0],
-                y:vertices[1][1],
-                spatialReference: view.spatialReference
-            }));
-            var circle=new Circle({
-                hasZ: false,
-                hasM: false,
-                center:center,
-                radius:dis,
-                spatialReference: view.spatialReference
-            });
-            var graphic = new Graphic({
-                geometry:circle ,
-                symbol: {
-                    type: "simple-fill",  // autocasts as new SimpleFillSymbol()
-                    color: [ 51,51, 204, 0.9 ],
-                    style: "solid",
-                    outline: {  // autocasts as new SimpleLineSymbol()
-                        color: "white",
-                        width: 1
-                    }
-                }
-            });
-            // 将绘制的图形添加到view
-            view.graphics.add(graphic);
-            if(event.type=="draw-complete"){
-                createBuffer(circle)
-            }
-        }
-        function createRectangle(event) {
-            //获取所有顶点
-            var vertices = event.vertices;
- 
-            //两点画矩形
-            if(vertices.length<2){
-                return
-            }
-            var rings=[vertices[0],[vertices[0][0],vertices[1][1]],vertices[1],[vertices[1][0],vertices[0][1]]];
-            //清除之前绘制
-            view.graphics.removeAll();
-            var polygon=new Polygon({
-                hasZ: false,
-                hasM: false,
-                rings: [rings],
-                spatialReference: view.spatialReference
-            });
-            // 生成绘制的图形
-            var graphic = new Graphic({
-                geometry: polygon,
-                symbol: {
-                    type: "simple-fill",  // autocasts as new SimpleFillSymbol()
-                    color: [ 51,51, 204, 0.9 ],
-                    style: "solid",
-                    outline: {  // autocasts as new SimpleLineSymbol()
-                        color: "white",
-                        width: 1
-                    }
-                }
-            });
-            // 将绘制的图形添加到view
-            view.graphics.add(graphic);
-            console.log(event);
-            if(event.type=="draw-complete"){
-                createBuffer(polygon);
-            }
-        }
- 
-        /**
-         * 根据geometry生成缓冲区
-         * @param geometry 生成的geometry
-         */
-        function createBuffer(geometry) {
-            // var buffer=geometryEngine.geodesicBuffer(geometry,150,"kilometers",false);
-            var buffer=geometryEngine.buffer(geometry,150,"kilometers",false);
-            view.graphics.add((new Graphic({
-                geometry: buffer,
-                symbol: polySym
-            })));
-        }
-    })
-</script>
-</body>
- 
+        dojo.addOnLoad(init);
+    </script>
+  </head>
+  
+  <body class="tundra">
+    <div id="map" style="width:900px;height:600px;border:1px solid #000"></div>
+    <div id="info" style="padding:5px;margin:5px;background-color:#eee;"></div>
+    Creates a map and adds an ArcGISTiledMapServiceLayer.  On map onExtentChanged event you should see the extent printed below the map.<br />
+    Map navigation using mouse:
+    <ul>
+      <li>Drag to pan</li>
+      <li>SHIFT + Click to recenter</li>
+      <li>SHIFT + Drag to zoom in</li>
+      <li>SHIFT + CTRL + Drag to zoom out</li>
+      <li>Mouse Scroll Forward to zoom in</li>
+      <li>Mouse Scroll Backward to zoom out</li>
+      <li>Use Arrow keys to pan</li>
+      <li>+ key to zoom in a level</li>
+      <li>- key to zoom out a level</li>
+      <li>Double Click to Center and Zoom in</li>
+    </ul>
+  </body>
 </html>
