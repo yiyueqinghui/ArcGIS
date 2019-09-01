@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no" />
+		<title>Simple Map</title>
+		<link rel="stylesheet" href="https://js.arcgis.com/3.29/esri/css/esri.css">
+		<style>
+			html,
+			body,
+			#map {
+				height: 100%;
+				width: 100%;
+				margin: 0;
+				padding: 0;
+			}
+			
+			body {
+				background-color: #FFF;
+				overflow: hidden;
+				font-family: "Trebuchet MS";
+			}
+		</style>
+		<script type="text/javascript" src="js/init.js"></script>
+		<script>
+			var map, graphic1, pointlayer, myPoint1;
+
+			require([
+				"dojo/dom", "dojo/_base/array", "dojo/promise/all", "dojo/json",
+				"esri/map", "esri/domUtils", "esri/graphic", "esri/graphicsUtils",
+				"esri/geometry/Polygon", "esri/tasks/GeometryService", "esri/geometry/Point", "esri/tasks/Geoprocessor",
+				"esri/tasks/FeatureSet", "esri/tasks/RelationParameters", "esri/symbols/PictureMarkerSymbol",
+				"esri/Color", "esri/symbols/SimpleLineSymbol", "esri/SpatialReference",
+				"esri/symbols/SimpleMarkerSymbol", "esri/symbols/SimpleFillSymbol",
+				"esri/layers/GraphicsLayer", "esri/geometry/Extent", "esri/InfoTemplate", "dojo/domReady!"
+			], function(dom, array, all, JSON,
+				Map, domUtils, Graphic, graphicsUtils,
+				Polygon, GeometryService, Point, Geoprocessor,
+				FeatureSet, RelationParameters, PictureMarkerSymbol,
+				Color, SimpleLineSymbol, SpatialReference,
+				SimpleMarkerSymbol, SimpleFillSymbol,
+				GraphicsLayer, InfoTemplate
+			) {
+				map = new Map("map", {
+					basemap: "topo",
+					center: [113.33, 36.33],
+					zoom: 13
+				});
+
+				pointlayer = new GraphicsLayer();
+				map.addLayer(pointlayer);
+
+				var attributes = {
+					"省份": "安徽",
+					"录取率": 43.04,
+					"未录取率": 56.96
+				};
+				myPoint1 = esri.geometry.geographicToWebMercator(new esri.geometry.Point({
+					"x": 113.33,
+					"y": 36.33,
+					"spatialReference": {
+						"wkid": 4326
+					}
+				}));
+
+				var symbol = new esri.symbol.PictureMarkerSymbol('img/carLogo.png', 20, 20);
+
+				var infoTemplate = new InfoTemplate("标题${省份}", "${省份}的录取率为${录取率},未录取率为${未录取率}");
+				graphic1 = new esri.Graphic(myPoint1, symbol, attributes, infoTemplate);
+
+				pointlayer.add(graphic1);
+
+			});
+		</script>
+	</head>
+
+	<body>
+		<div id="map"></div>
+	</body>
+
+</html>

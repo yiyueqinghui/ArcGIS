@@ -23,19 +23,22 @@
 			var map;
 			//方法一  
 			require([
-				"esri/map", "esri/geometry/Point", "esri/SpatialReference",
-				"esri/symbols/SimpleMarkerSymbol", "esri/graphic"
+				"esri/map", 
+				"esri/geometry/Point",
+				"esri/SpatialReference",
+				"esri/symbols/SimpleMarkerSymbol",
+				"esri/graphic",
 			], function(Map, Point, SpatialReference, SimpleMarkerSymbol, Graphic) {
 				//实例化地图
 				map = new Map("map", {
 					basemap: "topo",
-					center: [113, 37],
+					center: [116.397428, 39.90923],
 					zoom: 13
 				});
 
 				//加载时标记点
 				map.on("load", function() {
-					ShowLocation(113, 37);
+					ShowLocation(116.397428, 39.90923);
 				});
 
 				function ShowLocation(x, y) {
@@ -44,7 +47,7 @@
 						wkid: 4326
 					}));
 					//标记图标
-					var symbol = new esri.symbol.PictureMarkerSymbol("../img/carLogo.png", 25, 20);
+					var symbol = new esri.symbol.PictureMarkerSymbol("./img/carLogo.png", 25, 20);
 					//实例化
 					var graphic = new Graphic(point, symbol);
 					//增加到地图上

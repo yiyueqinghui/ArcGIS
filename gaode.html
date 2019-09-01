@@ -24,9 +24,10 @@
             parseOnLoad: true,
             packages: [{ //解释：require(["js/.."],function(){}) 中  js/ 即为 location的值
                 name: "js", //对应require引用包里的js
-                location: location.pathname.replace(/\/[^/]*$/, '') + '/js' //对应的路径
+                location: location.pathname.replace(/\/[^/]*$/, '') + '/js' //location.pathname表示当前文件位置 
             }]
         };
+//      配制参考 https://www.cnblogs.com/mytudousi/p/6166280.html
     </script>
     <!--<script src="https://js.arcgis.com/3.29/"></script>-->
     <script type="text/javascript" src="js/init.js"></script>
@@ -38,16 +39,21 @@
         var map;
         require(["esri/map",
         "esri/geometry/Extent",
+        "esri/geometry/Point", 
         "esri/SpatialReference",
         "js/gaodeLayer",
+        "esri/graphic",
+        "esri/layers/GraphicsLayer", 
+        "esri/InfoTemplate",
         "dojo/domReady!"], 
-        function (Map,Extent,SpatialReference,gaodeLayer) {
+        function (Map,Extent,Point,SpatialReference,gaodeLayer,Graphic,GraphicsLayer,InfoTemplate) {
             var startExtent = new Extent(112.445306, 35.485907, 112.445376, 35.485997,new SpatialReference({ wkid:4326 }) );   	
         	
             map = new Map("map", {
-                extent:startExtent,
-                center: [112.445376,35.485997],
-                zoom: 14,
+//              extent:startExtent,
+                basemap: "streets",
+                center: [116.397428, 39.90923],
+                zoom: 10,
                 logo :false, //logo
                 slider : true //缩小按钮
             });
@@ -56,7 +62,62 @@
             var baselayer = new gaodeLayer({layertype: "road"});//加载标注图
             map.addLayer(baselayer);//添加高德地图到map容器
 			
-			map.setMapCursor("pointer");
+			//车辆图层
+			var pointlayer = new GraphicsLayer();
+			map.addLayer(pointlayer);
+			 //标注车辆位置
+		    var lnglats = [
+		       {
+		       	  oldPosition:[116.397428, 39.90923],
+		       	  position:[116.368904, 39.923423],
+		       	  info:'沪H159327',
+		       	  angle:30,
+		       	  id:1,
+		       },
+		       {
+		       	  oldPosition:[116.382122, 39.921176],
+		       	  position:[116.382122, 39.921176],
+		       	  info:'京J02364',
+		       	  angle:35,
+		       	  id:2
+		       }
+		    ];
+		    
+			map.on("load", function() {
+				for(var i=0;i<lnglats.length;i++){
+					let x = lnglats[i].oldPosition[0],
+					    y = lnglats[i].oldPosition[1],
+					    desc = lnglats[i].info; 
+					ShowLocation(x,y,desc);
+				}
+				
+			});
+			
+			map.on('click',function(ev){
+				if(ev.graphic != undefined ){
+				   console.log(ev);
+				}
+			})
+
+			function ShowLocation(x, y ,desc) {
+				//点坐标
+				var point = new Point(x, y, new SpatialReference({
+					wkid: 4326
+				}));
+				//标记图标
+				var symbol = new esri.symbol.PictureMarkerSymbol("./img/carLogo.png", 25, 20);
+				
+				var attr = {"Xcoord":x,"Ycoord":y,"desc":desc};
+			    var dom = "<table>"+
+			         "<tr><td>车牌</td><td>${desc}</td></tr>"+
+			         "<tr><td>经纬度</td><td>${Xcoord} ${Ycoord}</td></tr>"+
+			    "</table>";
+				var info = new InfoTemplate("详细信息",dom);
+				//实例化
+				var graphic = new Graphic(point, symbol,attr,info);
+				//增加到地图上
+                pointlayer.add(graphic);
+			};
         });
 
 
