@@ -47,7 +47,11 @@
         "esri/InfoTemplate",
         "dojo/domReady!"], 
         function (Map,Extent,Point,SpatialReference,gaodeLayer,Graphic,GraphicsLayer,InfoTemplate) {
-            var startExtent = new Extent(112.445306, 35.485907, 112.445376, 35.485997,new SpatialReference({ wkid:4326 }) );   	
+            //创建popup弹出层
+//          var div = document.createElement('div');
+//          var popup = new Popup(null, div);
+            
+            var startExtent = new Extent(112.445306, 35.485907, 112.445376, 35.485997,new SpatialReference({ wkid:4326 }) );
         	
             map = new Map("map", {
 //              extent:startExtent,
@@ -74,13 +78,13 @@
 		       	  angle:30,
 		       	  id:1,
 		       },
-		       {
-		       	  oldPosition:[116.382122, 39.921176],
-		       	  position:[116.382122, 39.921176],
-		       	  info:'京J02364',
-		       	  angle:35,
-		       	  id:2
-		       }
+//		       {
+//		       	  oldPosition:[116.382122, 39.921176],
+//		       	  position:[116.382122, 39.921176],
+//		       	  info:'京J02364',
+//		       	  angle:35,
+//		       	  id:2
+//		       }
 		    ];
 		    
 			map.on("load", function() {
@@ -93,11 +97,23 @@
 				
 			});
 			
-			map.on('click',function(ev){
-				if(ev.graphic != undefined ){
-				   console.log(ev);
-				}
-			})
+			//点击车辆图层，弹出框信息
+            pointlayer.on("click",  function(e) {
+            	console.log(e);
+//              var detailInfo = '图形: '  + e.graphic.geometry.cache.geoShape + '<br>'
+//              var json = {title:"Attributes",content:"<b>经纬度</b>: ${STATE_NAME} ｜ Population: ${POP2001}"}
+//              var infoTemplate = new InfoTemplate(json);
+//              e.graphic.
+                let attr = e.graphic.attr;
+                e.graphic.setAttributes(attr);
+                
+                var dom = "<table>"+
+			         "<tr><td>车牌</td><td>${desc}</td></tr>"+
+			         "<tr><td>经纬度</td><td>${Xcoord} ${Ycoord}</td></tr>"+
+			    "</table>";
+				var info = new InfoTemplate("详细信息",dom);
+				e.graphic.setInfoTemplate(info);
+            });
 
             var all_points = [];
 			function ShowLocation(x, y ,desc) {
@@ -116,13 +132,16 @@
 			    "</table>";
 				var info = new InfoTemplate("详细信息",dom);
 				//实例化
-				var graphic = new Graphic(point, symbol,attr,info);
+//				var graphic = new Graphic(point, symbol,attr,info);
+				var graphic = new Graphic(point, symbol);
+				graphic.attr = attr;
 				all_points.push(graphic);
 				//增加到地图上
                 pointlayer.add(graphic);
 			};
 			
 			//模拟车辆的运动
+			
 			setTimeout(function(){
 				//修改坐标
 				let x = 116.468904,y = 39.993423;
@@ -131,7 +150,7 @@
 				}));
 				//移动图标
 				all_points[0].setGeometry(point);
-				all_points[0].setAttributes({"Xcoord":x,"Ycoord":y,"desc":'new point'})
+				all_points[0].attr = {"Xcoord":x,"Ycoord":y,"desc":'new point'};
 				
 			},5000);
         });
