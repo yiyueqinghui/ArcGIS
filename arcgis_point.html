@@ -41,15 +41,17 @@
         "esri/geometry/Extent",
         "esri/geometry/Point", 
         "esri/SpatialReference",
+        "esri/dijit/Scalebar",
         "js/gaodeLayer",
         "esri/graphic",
         "esri/layers/GraphicsLayer", 
         "esri/InfoTemplate",
+        "esri/dijit/Popup",
         "dojo/domReady!"], 
-        function (Map,Extent,Point,SpatialReference,gaodeLayer,Graphic,GraphicsLayer,InfoTemplate) {
+        function (Map,Extent,Point,SpatialReference,Scalebar,gaodeLayer,Graphic,GraphicsLayer,InfoTemplate,Popup) {
             //创建popup弹出层
-//          var div = document.createElement('div');
-//          var popup = new Popup(null, div);
+            var div = document.createElement('div');
+            var popup = new Popup(null, div);
             
             var startExtent = new Extent(112.445306, 35.485907, 112.445376, 35.485997,new SpatialReference({ wkid:4326 }) );
         	
@@ -59,12 +61,22 @@
                 center: [116.397428, 39.90923],
                 zoom: 10,
                 logo :false, //logo
+                infoWindow: popup,
                 slider : true //缩小按钮
             });
             // var baselayer = new gaodeLayer();//默认加载矢量 new gaodeLayer({layertype:"road"});也可以
             // var baselayer = new gaodeLayer({layertype: "st"});//加载卫星图
             var baselayer = new gaodeLayer({layertype: "road"});//加载标注图
             map.addLayer(baselayer);//添加高德地图到map容器
+            
+            //初始化比例尺
+            var scalebar = new Scalebar({
+                map: map,
+                attachTo: "bottom-left",
+                scalebarUnit: "dual",
+            });
+            //显示比例尺
+            scalebar.show();
 			
 			//车辆图层
 			var pointlayer = new GraphicsLayer();
@@ -73,18 +85,18 @@
 		    var lnglats = [
 		       {
 		       	  oldPosition:[116.397428, 39.90923],
-		       	  position:[116.368904, 39.923423],
+		       	  position:[116.368904, 39.943423],
 		       	  info:'沪H159327',
 		       	  angle:30,
 		       	  id:1,
 		       },
-//		       {
-//		       	  oldPosition:[116.382122, 39.921176],
-//		       	  position:[116.382122, 39.921176],
-//		       	  info:'京J02364',
-//		       	  angle:35,
-//		       	  id:2
-//		       }
+		       {
+		       	  oldPosition:[116.302122, 39.921176],
+		       	  position:[116.382122, 39.921176],
+		       	  info:'京J02364',
+		       	  angle:35,
+		       	  id:2
+		       }
 		    ];
 		    
 			map.on("load", function() {
@@ -97,60 +109,79 @@
 				
 			});
 			
+		
+			
 			//点击车辆图层，弹出框信息
+			var popup_point = {x:0,y:0};
             pointlayer.on("click",  function(e) {
             	console.log(e);
-//              var detailInfo = '图形: '  + e.graphic.geometry.cache.geoShape + '<br>'
-//              var json = {title:"Attributes",content:"<b>经纬度</b>: ${STATE_NAME} ｜ Population: ${POP2001}"}
-//              var infoTemplate = new InfoTemplate(json);
-//              e.graphic.
-                let attr = e.graphic.attr;
-                e.graphic.setAttributes(attr);
-                
-                var dom = "<table>"+
-			         "<tr><td>车牌</td><td>${desc}</td></tr>"+
-			         "<tr><td>经纬度</td><td>${Xcoord} ${Ycoord}</td></tr>"+
+            	var dom = "<table>"+
+			         "<tr><td>车牌</td><td>123</td></tr>"+
+			         "<tr><td>经纬度</td><td>116  39</td></tr>"+
 			    "</table>";
-				var info = new InfoTemplate("详细信息",dom);
-				e.graphic.setInfoTemplate(info);
+                popup.setTitle('图形信息');
+                popup.setContent(dom);
+                popup.show(e.mapPoint);
+                
+                //保存当前弹窗坐标，用以区别是哪个弹窗
+                let geometry = e.graphic.geometry;
+                popup_point.x = geometry.x;
+                popup_point.y = geometry.y;
+            	
             });
 
             var all_points = [];
+            //添加图标到地图 
 			function ShowLocation(x, y ,desc) {
 				//点坐标
 				var point = new Point(x, y, new SpatialReference({
 					wkid: 4326
 				}));
-				
 				//标记图标
 				var symbol = new esri.symbol.PictureMarkerSymbol("./img/carLogo.png", 25, 20);
 				
-				var attr = {"Xcoord":x,"Ycoord":y,"desc":desc};
-			    var dom = "<table>"+
-			         "<tr><td>车牌</td><td>${desc}</td></tr>"+
-			         "<tr><td>经纬度</td><td>${Xcoord} ${Ycoord}</td></tr>"+
-			    "</table>";
-				var info = new InfoTemplate("详细信息",dom);
-				//实例化
-//				var graphic = new Graphic(point, symbol,attr,info);
 				var graphic = new Graphic(point, symbol);
+				
+				let attr = {x:x,y:y,desc:'old point'};
 				graphic.attr = attr;
 				all_points.push(graphic);
 				//增加到地图上
                 pointlayer.add(graphic);
 			};
 			
-			//模拟车辆的运动
+			//更新弹窗信息
+			function updatePopup(data){
+				var point = new Point(data.x,data.y,new SpatialReference({
+					wkid: 4326
+				}));
+				popup.hide();
+				var dom = "<table>"+
+			         "<tr><td>车牌</td><td>12345</td></tr>"+
+			         "<tr><td>经纬度</td><td>116.7  39.9</td></tr>"+
+			    "</table>";
+                popup.setTitle('图形信息');
+                popup.setContent(dom);
+				popup.show(point)
+			}
 			
+			//模拟车辆的运动
 			setTimeout(function(){
 				//修改坐标
-				let x = 116.468904,y = 39.993423;
+				let x_old = lnglats[0]['oldPosition'][0], y_old = lnglats[0]['oldPosition'][1];
+				let x = lnglats[0]['position'][0],y = lnglats[0]['position'][1];
 				var point = new Point(x,y,new SpatialReference({
 					wkid: 4326
 				}));
-				//移动图标
 				all_points[0].setGeometry(point);
-				all_points[0].attr = {"Xcoord":x,"Ycoord":y,"desc":'new point'};
+				
+				//修改弹窗绑定信息
+				let attr ={x:x,y:y,desc:'moved new points'};
+				all_points[0].attr = attr;
+				
+				//修改弹窗信息
+				if(popup_point.x == x_old&popup_point.y == y_old){
+				    updatePopup(attr);
+				}
 				
 			},5000);
         });
