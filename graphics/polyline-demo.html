@@ -25,20 +25,31 @@
       #controls div {
         padding: 0 0 1em 0;
       }
+      #btn{
+      	position: fixed;
+      	top:30px;
+      	right:30px;
+      	z-index: 100;
+      }
     </style>
-
+  </head>
+  <body>
+    <div id="map"></div>
+    <button onclick="toggleLine()" id="btn">隐藏</button>
+  </body>
+  
     <script src="https://js.arcgis.com/3.29/"></script>
     <script>
       var map;
-    
+      var graphic;
       require([
         "esri/map", "esri/geometry/Circle", "esri/symbols/SimpleFillSymbol", 
         "esri/graphic", "esri/layers/GraphicsLayer",
-        "dojo/dom", "dojo/dom-attr", "esri/geometry/Polyline","dojo/domReady!"
+        "dojo/dom", "dojo/dom-attr", "esri/geometry/Polyline","esri/symbols/SimpleLineSymbol","dojo/domReady!"
       ], function(
         Map, Circle, SimpleFillSymbol, 
         Graphic, GraphicsLayer, 
-        dom, domAttr,Polyline
+        dom, domAttr,Polyline,SimpleLineSymbol
       ) {
         map = new Map("map", {
           basemap: "streets",
@@ -47,8 +58,9 @@
           zoom: 6
         });
         
-        map.on('load',function(){
-        	var symbol = new SimpleFillSymbol().setColor(null).outline.setColor("blue");
+        map.on('load',function(){  new SimpleLineSymbol()
+//      	var symbol = new SimpleFillSymbol().setColor(null).outline.setColor("blue");
+        	var symbol = new SimpleLineSymbol('STYLE_DASH','red',5);
           var polylineJson = {
 				    "paths":[[[-122.68,45.53], [-122.58,46.55],
 				    [-122.57,47.58],[-122.53,48.6]]],
@@ -56,16 +68,24 @@
 				  };
 
           var polyline = new Polyline(polylineJson);
-          var graphic = new Graphic(polyline, symbol);
+          graphic = new Graphic(polyline, symbol);
           map.graphics.add(graphic);
         	
         })
-       
-        
       });
+      
+      var bol = false;
+      var dom = document.getElementById('btn');
+      function toggleLine(){
+      	if(bol){
+      		 dom.innerHTML = '隐藏';
+      	   graphic.show();
+      	}else{
+      		 dom.innerHTML = '显示';
+      		 graphic.hide();
+      	}
+      	bol = !bol;
+      	
+      }
     </script>
-  </head>
-  <body>
-    <div id="map"></div>
-  </body>
 </html>
