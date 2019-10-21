@@ -3,9 +3,6 @@
 <head>
     <meta charset="utf-8" />
     <title>ArcGIS JS加载高德地图</title>
-    <!--<link rel="stylesheet" type="text/css" href="http://localhost:8080/arcgis_js_api/library/3.20/3.20/dijit/themes/tundra/tundra.css"/>-->
-    <!--<link rel="stylesheet" type="text/css" href="http://localhost:8080/arcgis_js_api/library/3.20/3.20/esri/css/esri.css" />-->
-    <!--<link rel="stylesheet" href="https://js.arcgis.com/3.29/dijit/themes/claro/claro.css">-->    
     <link rel="stylesheet" href="https://js.arcgis.com/3.29/esri/css/esri.css">
     
     <style>
@@ -19,7 +16,8 @@
 
 
     <script type="text/javascript">
-        var dojoConfig = {
+    	/* */
+        var dojoConfig = { 
             async: false, //是否异步
             parseOnLoad: true,
             packages: [{ //解释：require(["js/.."],function(){}) 中  js/ 即为 location的值
@@ -27,10 +25,11 @@
                 location: location.pathname.replace(/\/[^/]*$/, '') + '/js' //location.pathname表示当前文件位置 
             }]
         };
+        
 //      配制参考 https://www.cnblogs.com/mytudousi/p/6166280.html
     </script>
-    <!--<script src="https://js.arcgis.com/3.29/"></script>-->
-    <script type="text/javascript" src="js/init.js"></script>
+    <script src="https://js.arcgis.com/3.29/"></script>
+    <!--<script type="text/javascript" src="js/init.js"></script>-->
 
 
 
@@ -67,7 +66,7 @@
             // var baselayer = new gaodeLayer();//默认加载矢量 new gaodeLayer({layertype:"road"});也可以
             // var baselayer = new gaodeLayer({layertype: "st"});//加载卫星图
             var baselayer = new gaodeLayer({layertype: "road"});//加载标注图
-            map.addLayer(baselayer);//添加高德地图到map容器
+            map.addLayer(baselayer);//添加高德地图图层到map上
             
             //初始化比例尺
             var scalebar = new Scalebar({

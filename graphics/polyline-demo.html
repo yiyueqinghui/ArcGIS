@@ -58,7 +58,8 @@
           zoom: 6
         });
         
-        map.on('load',function(){  new SimpleLineSymbol()
+        map.on('load',function(){  
+		     //new SimpleLineSymbol()
 //      	var symbol = new SimpleFillSymbol().setColor(null).outline.setColor("blue");
         	var symbol = new SimpleLineSymbol('STYLE_DASH','red',5);
           var polylineJson = {
