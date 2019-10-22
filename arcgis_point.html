@@ -4,7 +4,6 @@
     <meta charset="utf-8" />
     <title>ArcGIS JS加载高德地图</title>
     <link rel="stylesheet" href="https://js.arcgis.com/3.29/esri/css/esri.css">
-    
     <style>
         html,body{
             height: 100%;
@@ -16,7 +15,10 @@
 
 
     <script type="text/javascript">
-    	/* */
+    	/* dojoConfig 配制，如果引入外部js用于地图的话，需要packages打包引入路径，例如这里引入高德底图，就需要如下配制，
+    	 * packages:[{name:'js',location: location.pathname.replace(/\/[^/]*$/, '') + '/js'}],
+    	 * 方可reauire([ "js/gaodeLayer"],function(goadeLayer){})
+    	 * */
         var dojoConfig = { 
             async: false, //是否异步
             parseOnLoad: true,
@@ -28,11 +30,8 @@
         
 //      配制参考 https://www.cnblogs.com/mytudousi/p/6166280.html
     </script>
-    <script src="https://js.arcgis.com/3.29/"></script>
-    <!--<script type="text/javascript" src="js/init.js"></script>-->
-
-
-
+    <!--<script src="https://js.arcgis.com/3.29/"></script>-->
+    <script type="text/javascript" src="js/init.js"></script>
     <script>
         //地图控件
         var map;
@@ -60,11 +59,13 @@
                 center: [116.397428, 39.90923],
                 zoom: 10,
                 logo :false, //logo
-                infoWindow: popup,
+                infoWindow: popup,  //弹窗
                 slider : true //缩小按钮
             });
             // var baselayer = new gaodeLayer();//默认加载矢量 new gaodeLayer({layertype:"road"});也可以
             // var baselayer = new gaodeLayer({layertype: "st"});//加载卫星图
+            
+            //加载高德图层
             var baselayer = new gaodeLayer({layertype: "road"});//加载标注图
             map.addLayer(baselayer);//添加高德地图图层到map上
             
@@ -79,7 +80,7 @@
 			
 			//车辆图层
 			var pointlayer = new GraphicsLayer();
-			map.addLayer(pointlayer);
+			map.addLayer(pointlayer,1);
 			 //标注车辆位置
 		    var lnglats = [
 		       {
@@ -103,6 +104,7 @@
 					let x = lnglats[i].oldPosition[0],
 					    y = lnglats[i].oldPosition[1],
 					    desc = lnglats[i].info; 
+					//加载车辆图标    
 					ShowLocation(x,y,desc);
 				}
 				
@@ -113,7 +115,6 @@
 			//点击车辆图层，弹出框信息
 			var popup_point = {x:0,y:0};
             pointlayer.on("click",  function(e) {
-            	console.log(e);
             	var dom = "<table>"+
 			         "<tr><td>车牌</td><td>123</td></tr>"+
 			         "<tr><td>经纬度</td><td>116  39</td></tr>"+
@@ -130,7 +131,7 @@
             });
 
             var all_points = [];
-            //添加图标到地图 
+            //添加车辆图标到地图 
 			function ShowLocation(x, y ,desc) {
 				//点坐标
 				var point = new Point(x, y, new SpatialReference({
@@ -143,8 +144,9 @@
 				
 				let attr = {x:x,y:y,desc:'old point'};
 				graphic.attr = attr;
+				//记录图层上已经填加的车辆坐标
 				all_points.push(graphic);
-				//增加到地图上
+				//增加点们到pointlayer图层
                 pointlayer.add(graphic);
 			};
 			
@@ -171,6 +173,7 @@
 				var point = new Point(x,y,new SpatialReference({
 					wkid: 4326
 				}));
+				//移动车辆位置
 				all_points[0].setGeometry(point);
 				
 				//修改弹窗绑定信息

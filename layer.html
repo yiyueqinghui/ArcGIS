@@ -2,9 +2,8 @@
 <html>
 <head>
     <meta charset="utf-8" />
-    <title>ArcGIS JS加载高德地图</title>
+    <title>ArcGIS JS图层的操作和图层顺序</title>
     <link rel="stylesheet" href="https://js.arcgis.com/3.29/esri/css/esri.css">
-    
     <style>
         html,body{
             height: 100%;
@@ -29,7 +28,9 @@
     <script type="text/javascript" src="js/init.js"></script>
     <script>
         //地图控件
-        var map;
+        var map;   //地图
+        var pointlayer;  //图层一
+        var linelayer;    //图层二
         require(["esri/map",
         "esri/geometry/Extent",
         "esri/geometry/Point", 
@@ -53,9 +54,45 @@
             var baselayer = new gaodeLayer({layertype: "road"});//加载标注图
             map.addLayer(baselayer);//添加高德地图到map容器
 
+            //图层一
+            pointlayer = new GraphicsLayer();
+			map.addLayer(pointlayer,2);   // 1 表示图层的顺序，相当于z-index;值越大,越在上方。
 			
-
-        });
+			//图层二
+			linelayer = new GraphicsLayer();
+			map.addLayer(linelayer,1);
+			
+			//添加车辆图标到地图 
+			function ShowLocation(x, y) {
+				//点坐标
+				var point = new Point(x, y, new SpatialReference({
+					wkid: 4326
+				}));
+				//标记图标
+				var symbol = new esri.symbol.PictureMarkerSymbol("./img/carLogo.png", 25, 20);
+				
+				var graphic = new Graphic(point, symbol);
+				
+				//增加点们到pointlayer图层
+	            pointlayer.add(graphic);
+			};
+			
+			 ShowLocation(116.397428, 39.90923);
+			 
+			//画线
+			function drawLine(){
+				
+			}
+	    });
+        
+       
+        
+        
+        
+        
+        
+        
+        
 
 
     </script>
