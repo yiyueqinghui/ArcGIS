@@ -1,0 +1,137 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+    <title>行政区边界查询</title>
+    <link rel="stylesheet" href="https://a.amap.com/jsapi_demos/static/demo-center/css/demo-center.css"/> 
+    <style>
+        html,body,#container{
+            margin:0;
+            height:100%;
+        }
+        .input-item-text{
+            width:7rem;
+        }
+        #showResult{
+        	width: 200px;
+        	height: 100px;
+        	position: absolute;
+        	top:20px;
+        	right: 20px;
+        	z-index: 100;
+        	font-size: 15px;
+        	border: 1px solid darkgray;
+        	background: #ffffff;
+        }
+    </style>
+</head>
+<body>
+<div id="container"></div>
+<div id="showResult"></div>
+<div class="input-card">
+    <label style='color:grey'>行政区边界查询</label>
+    <div class="input-item">
+            <div class="input-item-prepend">
+                <span class="input-item-text" >行政级别</span>
+            </div>
+            <select id="level">
+                <option value="district">district</option>
+                <option value="city">city</option>
+                <option value="province">province</option>
+            </select>
+            
+    </div>
+    <div class="input-item">
+            <div class="input-item-prepend">
+                <span class="input-item-text" >名称/adcode</span>
+            </div>
+            <input id='district' type="text" value='乐山市'>
+            
+    </div>
+    <input id="draw" type="button" class="btn" value="查询" />
+</div>
+<script type="text/javascript" src="https://webapi.amap.com/maps?v=1.4.15&key=1a37a5cfea9cc8e1dd23cdb521ef1510&plugin=AMap.DistrictSearch"></script>
+<script type="text/javascript">
+    //初始化地图对象，加载地图
+    var map = new AMap.Map("container", {
+        resizeEnable: true,
+        center: [116.397428, 39.90923],//地图中心点
+        zoom: 10 //地图显示的缩放级别
+    });
+    
+    var district = null;
+    var polygons=[];
+    function drawBounds() {
+        //加载行政区划插件
+        if(!district){
+            //实例化DistrictSearch
+            var opts = {
+                subdistrict: 0,   //获取边界不需要返回下级行政区
+                extensions: 'all',  //返回行政区边界坐标组等具体信息
+                level: 'district'  //查询行政级别为 市
+            };
+            district = new AMap.DistrictSearch(opts);
+        }
+        //行政区查询
+        var maxX =0,maxY = 0,minX = 130,minY = 130;
+        district.setLevel(document.getElementById('level').value)
+        district.search(document.getElementById('district').value, function(status, result) {
+            map.remove(polygons)//清除上次结果
+            polygons = [];
+            var bounds = result.districtList[0].boundaries;
+            if (bounds) {
+                for (var i = 0, l = bounds.length; i < l; i++) {
+                    //生成行政区划polygon
+                    let boundsArr = bounds[i];
+                    var polygon = new AMap.Polygon({
+                        strokeWeight: 1,
+                        path:boundsArr,
+                        fillOpacity: 0.4,
+                        fillColor: '#80d8ff',
+                        strokeColor: '#0091ea'
+                    });
+                    
+                    for(var j=0;j<boundsArr.length;j++){
+                    	var item = boundsArr[j];
+                    	if(minX>item['lng']) minX = item['lng'];
+	                    if(minY>item['lat']) minY = item['lat'];
+	                    if(maxX<item['lng']) maxX = item['lng'];
+	                    if(maxY<item['lat']) maxY = item['lat'];
+                    }
+                    
+                    
+                    
+                    polygons.push(polygon);
+                }
+            }
+            
+            let resultxy = "minX: "+minX+"<br/>minY: "+minY+"<br/>maxX: "+maxX+"<br/>maxY: "+maxY;
+            var domResult = document.getElementById('showResult');
+            domResult.innerHTML = resultxy;
+            console.log(resultxy); 
+            
+           map.on('click',function(e){
+               console.log(e);
+           })
+          
+            map.add(polygons)
+            map.setFitView(polygons);//视口自适应
+        });
+    }
+    
+    
+    
+    drawBounds();
+    document.getElementById('draw').onclick = drawBounds;
+    document.getElementById('district').onkeydown = function(e) {
+        if (e.keyCode === 13) {
+            drawBounds();
+            return false;
+        }
+        return true;
+    };
+</script>
+</body>
+</html>
